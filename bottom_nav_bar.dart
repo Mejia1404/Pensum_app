@@ -47,7 +47,7 @@ class _LiquidGlassNavBarState extends State<LiquidGlassNavBar>
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
-    
+
     _glowAnimation = Tween<double>(begin: 0.3, end: 0.6).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
@@ -81,7 +81,8 @@ class _LiquidGlassNavBarState extends State<LiquidGlassNavBar>
                 ),
                 // Ambient glow
                 BoxShadow(
-                  color: AppColors.accent.withOpacity(_glowAnimation.value * 0.15),
+                  color:
+                      AppColors.accent.withOpacity(_glowAnimation.value * 0.15),
                   blurRadius: 40,
                   offset: const Offset(0, 5),
                   spreadRadius: -10,
@@ -113,7 +114,8 @@ class _LiquidGlassNavBarState extends State<LiquidGlassNavBar>
                     border: Border.all(
                       width: 1.5,
                       color: widget.isDark
-                          ? Colors.white.withOpacity(0.12 + _glowAnimation.value * 0.05)
+                          ? Colors.white
+                              .withOpacity(0.12 + _glowAnimation.value * 0.05)
                           : Colors.white.withOpacity(0.8),
                     ),
                   ),
@@ -140,7 +142,8 @@ class _LiquidGlassNavBarState extends State<LiquidGlassNavBar>
                               ],
                       ),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: widget.isCompact ? 6 : 10),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: widget.isCompact ? 6 : 10),
                     child: _buildContent(),
                   ),
                 ),
@@ -169,7 +172,8 @@ class _LiquidGlassNavBarState extends State<LiquidGlassNavBar>
               bottom: 8,
               width: itemWidth,
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: widget.isCompact ? 3 : 5),
+                padding:
+                    EdgeInsets.symmetric(horizontal: widget.isCompact ? 3 : 5),
                 child: _LiquidGlassIndicator(
                   isDark: widget.isDark,
                   glowAnimation: _glowAnimation,
@@ -247,13 +251,15 @@ class _LiquidGlassIndicator extends StatelessWidget {
             border: Border.all(
               width: 1,
               color: isDark
-                  ? AppColors.accent.withOpacity(0.3 + glowAnimation.value * 0.2)
+                  ? AppColors.accent
+                      .withOpacity(0.3 + glowAnimation.value * 0.2)
                   : AppColors.accent.withOpacity(0.4),
             ),
             boxShadow: [
               // Inner glow
               BoxShadow(
-                color: AppColors.accent.withOpacity(0.15 + glowAnimation.value * 0.1),
+                color: AppColors.accent
+                    .withOpacity(0.15 + glowAnimation.value * 0.1),
                 blurRadius: 12,
                 spreadRadius: -2,
               ),
@@ -407,7 +413,8 @@ class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOutCubic,
                 style: TextStyle(
-                  fontWeight: widget.isSelected ? FontWeight.w600 : FontWeight.w500,
+                  fontWeight:
+                      widget.isSelected ? FontWeight.w600 : FontWeight.w500,
                   fontSize: fontSize,
                   color: widget.isSelected ? selectedColor : unselectedColor,
                   letterSpacing: -0.3,
@@ -537,7 +544,8 @@ class _LiquidGlassProgressIndicatorState
                           begin: Alignment.topLeft,
                           end: const Alignment(0.3, 0.3),
                           colors: [
-                            Colors.white.withOpacity(widget.isDark ? 0.08 : 0.5),
+                            Colors.white
+                                .withOpacity(widget.isDark ? 0.08 : 0.5),
                             Colors.transparent,
                           ],
                         ),

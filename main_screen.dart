@@ -53,7 +53,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       setState(() {
         final pensumSuffix = PensumData.currentPensumId;
         completedSubjects =
-            (prefs.getStringList('completedSubjects_$pensumSuffix') ?? []).toSet();
+            (prefs.getStringList('completedSubjects_$pensumSuffix') ?? [])
+                .toSet();
         userName = prefs.getString('userName') ?? PensumData.currentDegree;
         profileImagePath = prefs.getString('profileImagePath');
         _updateCalculatedValues();
@@ -81,7 +82,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   bool isSubjectUnlocked(Subject subject) {
     if (subject.prerequisites.isEmpty) return true;
-    return subject.prerequisites.every((pre) => completedSubjects.contains(pre));
+    return subject.prerequisites
+        .every((pre) => completedSubjects.contains(pre));
   }
 
   void toggleSubjectCompletion(Subject subject) {
@@ -135,7 +137,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       sigmaY: 8 * curvedAnimation.value,
                     ),
                     child: Container(
-                      color: Colors.black.withOpacity(overlayOpacity.value * 0.2),
+                      color:
+                          Colors.black.withOpacity(overlayOpacity.value * 0.2),
                     ),
                   );
                 },
@@ -271,8 +274,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       sigmaY: 12 * curvedAnimation.value,
                     ),
                     child: Container(
-                      color: Colors.black
-                          .withOpacity((0.4 * curvedAnimation.value).clamp(0.0, 1.0)),
+                      color: Colors.black.withOpacity(
+                          (0.4 * curvedAnimation.value).clamp(0.0, 1.0)),
                     ),
                   );
                 },
@@ -286,7 +289,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 ).animate(curvedAnimation),
                 child: ScaleTransition(
                   alignment: const Alignment(0.8, 0.8),
-                  scale: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
+                  scale: Tween<double>(begin: 0.0, end: 1.0)
+                      .animate(curvedAnimation),
                   child: FadeTransition(
                     opacity: curvedAnimation,
                     child: child,
@@ -319,7 +323,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textLightPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textLightPrimary,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -449,7 +455,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
         if (isLoading) {
           return Scaffold(
-            backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+            backgroundColor:
+                isDark ? AppColors.darkBackground : AppColors.lightBackground,
             body: const Center(
               child: CircularProgressIndicator(color: AppColors.accent),
             ),
@@ -502,7 +509,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
         ];
 
         return Scaffold(
-          backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+          backgroundColor:
+              isDark ? AppColors.darkBackground : AppColors.lightBackground,
           extendBody: true,
           body: NotificationListener<UserScrollNotification>(
             onNotification: (notification) {
@@ -521,12 +529,16 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 switchOutCurve: Curves.easeInCubic,
                 transitionBuilder: (Widget child, Animation<double> animation) {
                   final isNext = _currentIndex >= _previousIndex;
-                  final slideIn = isNext ? const Offset(0.15, 0) : const Offset(-0.15, 0);
-                  final slideOut = isNext ? const Offset(-0.15, 0) : const Offset(0.15, 0);
+                  final slideIn =
+                      isNext ? const Offset(0.15, 0) : const Offset(-0.15, 0);
+                  final slideOut =
+                      isNext ? const Offset(-0.15, 0) : const Offset(0.15, 0);
 
                   return SlideTransition(
                     position: Tween<Offset>(
-                      begin: (child.key == ValueKey<int>(_currentIndex)) ? slideIn : slideOut,
+                      begin: (child.key == ValueKey<int>(_currentIndex))
+                          ? slideIn
+                          : slideOut,
                       end: Offset.zero,
                     ).animate(CurvedAnimation(
                       parent: animation,
