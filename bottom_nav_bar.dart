@@ -1,9 +1,8 @@
 import 'dart:ui';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
-class LiquidGlassNavBar extends StatefulWidget {
+class LiquidGlassNavBar extends StatelessWidget {
   final int currentIndex;
   final bool isDark;
   final bool isCompact;
@@ -21,15 +20,6 @@ class LiquidGlassNavBar extends StatefulWidget {
     this.onProgressTap,
   });
 
-  @override
-  State<LiquidGlassNavBar> createState() => _LiquidGlassNavBarState();
-}
-
-class _LiquidGlassNavBarState extends State<LiquidGlassNavBar>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _glowController;
-  late Animation<double> _glowAnimation;
-
   static const _icons = [
     Icons.home_rounded,
     Icons.bar_chart_rounded,
@@ -41,258 +31,107 @@ class _LiquidGlassNavBarState extends State<LiquidGlassNavBar>
   static const _labels = ['Home', 'Stats', 'Pensum', 'Tareas', 'Perfil'];
 
   @override
-  void initState() {
-    super.initState();
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
-
-    _glowAnimation = Tween<double>(begin: 0.3, end: 0.6).animate(
-      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _glowController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final totalItems = _icons.length + 1; // 5 nav items + 1 progress
+
     return RepaintBoundary(
-      child: AnimatedBuilder(
-        animation: _glowAnimation,
-        builder: (context, child) {
-          return Container(
-            height: 76,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            height: 64,
+            padding: EdgeInsets.symmetric(horizontal: isCompact ? 4 : 8),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(38),
-              // Outer glow - subtle ambient light
+              color: isDark
+                  ? AppColors.darkSurface.withOpacity(0.75)
+                  : AppColors.lightSurface.withOpacity(0.75),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                width: 1,
+              ),
               boxShadow: [
-                // Main shadow
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-                  blurRadius: 30,
-                  offset: const Offset(0, 12),
-                  spreadRadius: -5,
-                ),
-                // Ambient glow
-                BoxShadow(
-                  color:
-                      AppColors.accent.withOpacity(_glowAnimation.value * 0.15),
-                  blurRadius: 40,
-                  offset: const Offset(0, 5),
-                  spreadRadius: -10,
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(38),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(38),
-                    // Liquid Glass layered effect
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: widget.isDark
-                          ? [
-                              const Color(0xFF1A1A1C).withOpacity(0.75),
-                              const Color(0xFF0D0D0F).withOpacity(0.85),
-                            ]
-                          : [
-                              Colors.white.withOpacity(0.75),
-                              const Color(0xFFF5F5F7).withOpacity(0.85),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final itemWidth = constraints.maxWidth / totalItems;
+                return Stack(
+                  children: [
+                    // Sliding indicator (only for nav items, not progress)
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      left: itemWidth * currentIndex,
+                      top: 10,
+                      bottom: 10,
+                      width: itemWidth,
+                      child: Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: isCompact ? 0 : 2),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.primary.withOpacity(0.3)
+                                : AppColors.primary.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(100),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              )
                             ],
-                    ),
-                    // Inner border glow - the "liquid" edge
-                    border: Border.all(
-                      width: 1.5,
-                      color: widget.isDark
-                          ? Colors.white
-                              .withOpacity(0.12 + _glowAnimation.value * 0.05)
-                          : Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                  child: Container(
-                    // Inner highlight layer for depth
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(36),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        stops: const [0.0, 0.3, 0.7, 1.0],
-                        colors: widget.isDark
-                            ? [
-                                Colors.white.withOpacity(0.08),
-                                Colors.transparent,
-                                Colors.transparent,
-                                Colors.white.withOpacity(0.03),
-                              ]
-                            : [
-                                Colors.white.withOpacity(0.9),
-                                Colors.transparent,
-                                Colors.transparent,
-                                Colors.white.withOpacity(0.4),
-                              ],
+                          ),
+                        ),
                       ),
                     ),
-                    padding: EdgeInsets.symmetric(
-                        horizontal: widget.isCompact ? 6 : 10),
-                    child: _buildContent(),
-                  ),
-                ),
-              ),
+                    // Icons + Progress
+                    Row(
+                      children: [
+                        ...List.generate(_icons.length, (i) {
+                          return SizedBox(
+                            width: itemWidth,
+                            child: _LiquidNavItem(
+                              icon: _icons[i],
+                              label: _labels[i],
+                              isSelected: currentIndex == i,
+                              isCompact: isCompact,
+                              isDark: isDark,
+                              onTap: () => onTap(i),
+                            ),
+                          );
+                        }),
+                        // Progress indicator integrated
+                        SizedBox(
+                          width: itemWidth,
+                          child: _ProgressNavItem(
+                            progress: progress,
+                            isDark: isDark,
+                            isCompact: isCompact,
+                            onTap: onProgressTap,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
-
-  Widget _buildContent() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final totalItems = _icons.length + 1;
-        final itemWidth = constraints.maxWidth / totalItems;
-
-        return Stack(
-          children: [
-            // Liquid Glass selected indicator
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeOutCubic,
-              left: itemWidth * widget.currentIndex,
-              top: 8,
-              bottom: 8,
-              width: itemWidth,
-              child: Padding(
-                padding:
-                    EdgeInsets.symmetric(horizontal: widget.isCompact ? 3 : 5),
-                child: _LiquidGlassIndicator(
-                  isDark: widget.isDark,
-                  glowAnimation: _glowAnimation,
-                ),
-              ),
-            ),
-            // Nav items
-            Row(
-              children: [
-                ...List.generate(_icons.length, (i) {
-                  return SizedBox(
-                    width: itemWidth,
-                    child: _LiquidGlassNavItem(
-                      icon: _icons[i],
-                      label: _labels[i],
-                      isSelected: widget.currentIndex == i,
-                      isCompact: widget.isCompact,
-                      isDark: widget.isDark,
-                      onTap: () => widget.onTap(i),
-                    ),
-                  );
-                }),
-                // Progress indicator
-                SizedBox(
-                  width: itemWidth,
-                  child: _LiquidGlassProgressIndicator(
-                    progress: widget.progress,
-                    isDark: widget.isDark,
-                    isCompact: widget.isCompact,
-                    onTap: widget.onProgressTap,
-                    glowAnimation: _glowAnimation,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
 
-class _LiquidGlassIndicator extends StatelessWidget {
-  final bool isDark;
-  final Animation<double> glowAnimation;
-
-  const _LiquidGlassIndicator({
-    required this.isDark,
-    required this.glowAnimation,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: glowAnimation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            // Glass-like fill
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: isDark
-                  ? [
-                      const Color(0xFF2A2A2E).withOpacity(0.9),
-                      const Color(0xFF1F1F23).withOpacity(0.95),
-                    ]
-                  : [
-                      Colors.white.withOpacity(0.95),
-                      const Color(0xFFF0F0F2).withOpacity(0.98),
-                    ],
-            ),
-            // Liquid border effect
-            border: Border.all(
-              width: 1,
-              color: isDark
-                  ? AppColors.accent
-                      .withOpacity(0.3 + glowAnimation.value * 0.2)
-                  : AppColors.accent.withOpacity(0.4),
-            ),
-            boxShadow: [
-              // Inner glow
-              BoxShadow(
-                color: AppColors.accent
-                    .withOpacity(0.15 + glowAnimation.value * 0.1),
-                blurRadius: 12,
-                spreadRadius: -2,
-              ),
-              // Subtle drop shadow
-              if (!isDark)
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-            ],
-          ),
-          // Inner highlight
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(29),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: const Alignment(0.3, 0.3),
-                colors: [
-                  Colors.white.withOpacity(isDark ? 0.1 : 0.6),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _LiquidGlassNavItem extends StatefulWidget {
+class _LiquidNavItem extends StatefulWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
@@ -300,7 +139,7 @@ class _LiquidGlassNavItem extends StatefulWidget {
   final bool isDark;
   final bool isCompact;
 
-  const _LiquidGlassNavItem({
+  const _LiquidNavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
@@ -310,10 +149,10 @@ class _LiquidGlassNavItem extends StatefulWidget {
   });
 
   @override
-  State<_LiquidGlassNavItem> createState() => _LiquidGlassNavItemState();
+  State<_LiquidNavItem> createState() => _LiquidNavItemState();
 }
 
-class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
+class _LiquidNavItemState extends State<_LiquidNavItem>
     with SingleTickerProviderStateMixin {
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
@@ -324,14 +163,13 @@ class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
     super.initState();
     _bounceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 500),
     );
     _bounceAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.8), weight: 10),
-      TweenSequenceItem(tween: Tween(begin: 0.8, end: 1.15), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.8), weight: 15),
+      TweenSequenceItem(tween: Tween(begin: 0.8, end: 1.15), weight: 30),
       TweenSequenceItem(tween: Tween(begin: 1.15, end: 0.95), weight: 25),
-      TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.02), weight: 20),
-      TweenSequenceItem(tween: Tween(begin: 1.02, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.0), weight: 30),
     ]).animate(CurvedAnimation(
       parent: _bounceController,
       curve: Curves.easeOutCubic,
@@ -339,7 +177,7 @@ class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
   }
 
   @override
-  void didUpdateWidget(covariant _LiquidGlassNavItem oldWidget) {
+  void didUpdateWidget(covariant _LiquidNavItem oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!oldWidget.isSelected && widget.isSelected) {
       _bounceController.forward(from: 0.0);
@@ -354,13 +192,13 @@ class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
 
   @override
   Widget build(BuildContext context) {
-    final iconSize = widget.isCompact ? 23.0 : 25.0;
-    final fontSize = widget.isCompact ? 9.5 : 10.5;
+    final iconSize = widget.isCompact ? 20.0 : 22.0;
+    final fontSize = widget.isCompact ? 9.0 : 10.0;
 
-    final selectedColor = AppColors.accent;
+    final selectedColor = widget.isDark ? Colors.white : AppColors.primary;
     final unselectedColor = widget.isDark
         ? Colors.white.withOpacity(0.5)
-        : Colors.black.withOpacity(0.45);
+        : AppColors.textLightMuted.withOpacity(0.7);
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
@@ -369,7 +207,7 @@ class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
       onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedScale(
-        scale: _isPressed ? 0.88 : 1.0,
+        scale: _isPressed ? 0.85 : 1.0,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
         child: Container(
@@ -385,39 +223,29 @@ class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
                     child: child,
                   );
                 },
-                child: ShaderMask(
-                  shaderCallback: (bounds) {
-                    if (widget.isSelected) {
-                      return LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.accent,
-                          AppColors.accentLight,
-                        ],
-                      ).createShader(bounds);
-                    }
-                    return LinearGradient(
-                      colors: [unselectedColor, unselectedColor],
-                    ).createShader(bounds);
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(opacity: animation, child: child);
                   },
                   child: Icon(
                     widget.icon,
-                    color: Colors.white,
+                    key: ValueKey('${widget.isSelected}_${widget.icon}'),
+                    color: widget.isSelected ? selectedColor : unselectedColor,
                     size: iconSize,
                   ),
                 ),
               ),
               const SizedBox(height: 4),
               AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
                 style: TextStyle(
                   fontWeight:
-                      widget.isSelected ? FontWeight.w600 : FontWeight.w500,
+                      widget.isSelected ? FontWeight.w700 : FontWeight.w500,
                   fontSize: fontSize,
                   color: widget.isSelected ? selectedColor : unselectedColor,
-                  letterSpacing: -0.3,
+                  letterSpacing: widget.isSelected ? 0.2 : 0.0,
                 ),
                 child: Text(
                   widget.label,
@@ -433,36 +261,35 @@ class _LiquidGlassNavItemState extends State<_LiquidGlassNavItem>
   }
 }
 
-class _LiquidGlassProgressIndicator extends StatefulWidget {
+class _ProgressNavItem extends StatefulWidget {
   final double progress;
   final bool isDark;
   final bool isCompact;
   final VoidCallback? onTap;
-  final Animation<double> glowAnimation;
 
-  const _LiquidGlassProgressIndicator({
+  const _ProgressNavItem({
     required this.progress,
     required this.isDark,
-    required this.isCompact,
-    required this.glowAnimation,
+    this.isCompact = false,
     this.onTap,
   });
 
   @override
-  State<_LiquidGlassProgressIndicator> createState() =>
-      _LiquidGlassProgressIndicatorState();
+  State<_ProgressNavItem> createState() => _ProgressNavItemState();
 }
 
-class _LiquidGlassProgressIndicatorState
-    extends State<_LiquidGlassProgressIndicator> {
+class _ProgressNavItemState extends State<_ProgressNavItem> {
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
-    final ringSize = widget.isCompact ? 38.0 : 42.0;
-    final innerSize = ringSize - 8;
-    final fontSize = widget.isCompact ? 10.0 : 11.0;
-    final labelFontSize = widget.isCompact ? 8.5 : 9.5;
+    final ringSize = widget.isCompact ? 28.0 : 32.0;
+    final fontSize = widget.isCompact ? 9.0 : 10.0;
+
+    final accentColor = AppColors.accent;
+    final labelColor = widget.isDark
+        ? Colors.white.withOpacity(0.5)
+        : AppColors.textLightMuted.withOpacity(0.7);
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
@@ -471,207 +298,61 @@ class _LiquidGlassProgressIndicatorState
       onTap: widget.onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedScale(
-        scale: _isPressed ? 0.88 : 1.0,
+        scale: _isPressed ? 0.85 : 1.0,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOutCubic,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: widget.glowAnimation,
-              builder: (context, child) {
-                return Container(
-                  width: ringSize + 4,
-                  height: ringSize + 4,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accent.withOpacity(
-                            0.2 + widget.glowAnimation.value * 0.15),
-                        blurRadius: 12,
-                        spreadRadius: -2,
-                      ),
-                    ],
-                  ),
-                  child: child,
-                );
-              },
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Progress ring with gradient
-                  SizedBox(
-                    width: ringSize,
-                    height: ringSize,
-                    child: CustomPaint(
-                      painter: _LiquidProgressPainter(
-                        progress: widget.progress,
-                        isDark: widget.isDark,
+        child: Container(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: ringSize,
+                height: ringSize,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Progress ring
+                    SizedBox(
+                      width: ringSize,
+                      height: ringSize,
+                      child: CircularProgressIndicator(
+                        value: widget.progress,
+                        strokeWidth: 2.5,
+                        strokeCap: StrokeCap.round,
+                        backgroundColor: widget.isDark
+                            ? AppColors.darkBorder.withOpacity(0.3)
+                            : AppColors.lightBorder.withOpacity(0.5),
+                        valueColor: AlwaysStoppedAnimation<Color>(accentColor),
                       ),
                     ),
-                  ),
-                  // Inner glass circle
-                  Container(
-                    width: innerSize,
-                    height: innerSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: widget.isDark
-                            ? [
-                                const Color(0xFF2A2A2E).withOpacity(0.9),
-                                const Color(0xFF1F1F23).withOpacity(0.95),
-                              ]
-                            : [
-                                Colors.white.withOpacity(0.95),
-                                const Color(0xFFF0F0F2).withOpacity(0.98),
-                              ],
-                      ),
-                      border: Border.all(
-                        width: 1,
-                        color: widget.isDark
-                            ? Colors.white.withOpacity(0.1)
-                            : Colors.white.withOpacity(0.8),
+                    // Percentage text
+                    Text(
+                      '${(widget.progress * 100).toStringAsFixed(0)}%',
+                      style: TextStyle(
+                        fontSize: widget.isCompact ? 8.0 : 9.0,
+                        fontWeight: FontWeight.bold,
+                        color: accentColor,
                       ),
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: const Alignment(0.3, 0.3),
-                          colors: [
-                            Colors.white
-                                .withOpacity(widget.isDark ? 0.08 : 0.5),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: ShaderMask(
-                          shaderCallback: (bounds) {
-                            return const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                AppColors.accent,
-                                AppColors.accentLight,
-                              ],
-                            ).createShader(bounds);
-                          },
-                          child: Text(
-                            '${(widget.progress * 100).toStringAsFixed(0)}%',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: fontSize,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              'Progreso',
-              style: TextStyle(
-                color: widget.isDark
-                    ? Colors.white.withOpacity(0.5)
-                    : Colors.black.withOpacity(0.45),
-                fontSize: labelFontSize,
-                fontWeight: FontWeight.w500,
-                letterSpacing: -0.3,
+              const SizedBox(height: 4),
+              Text(
+                'Progreso',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: fontSize,
+                  color: labelColor,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
-  }
-}
-
-class _LiquidProgressPainter extends CustomPainter {
-  final double progress;
-  final bool isDark;
-
-  _LiquidProgressPainter({
-    required this.progress,
-    required this.isDark,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 2;
-    const strokeWidth = 3.5;
-
-    // Background track
-    final trackPaint = Paint()
-      ..color = isDark
-          ? Colors.white.withOpacity(0.08)
-          : Colors.black.withOpacity(0.06)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawCircle(center, radius, trackPaint);
-
-    // Progress arc with gradient
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    final progressPaint = Paint()
-      ..shader = const SweepGradient(
-        startAngle: -math.pi / 2,
-        endAngle: 3 * math.pi / 2,
-        colors: [
-          AppColors.accent,
-          AppColors.accentLight,
-          AppColors.accent,
-        ],
-        stops: [0.0, 0.5, 1.0],
-      ).createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      2 * math.pi * progress,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _LiquidProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.isDark != isDark;
-  }
-}
-
-// Backwards compatibility
-class ProgressFab extends StatelessWidget {
-  final double progress;
-  final bool isDark;
-  final VoidCallback onTap;
-  final double size;
-
-  const ProgressFab({
-    super.key,
-    required this.progress,
-    required this.isDark,
-    required this.onTap,
-    this.size = 50,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.shrink();
   }
 }
