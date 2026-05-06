@@ -556,34 +556,22 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   builder: (context, constraints) {
                     final screenWidth = constraints.maxWidth;
                     final isCompact = screenWidth < 380;
-                    final fabSize = isCompact ? 44.0 : 50.0;
 
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: LiquidGlassNavBar(
-                            currentIndex: _currentIndex,
-                            isDark: isDark,
-                            isCompact: isCompact,
-                            onTap: (index) {
-                              if (_currentIndex != index) {
-                                setState(() {
-                                  _previousIndex = _currentIndex;
-                                  _currentIndex = index;
-                                  _isNavbarVisible = true;
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                        SizedBox(width: isCompact ? 8 : 12),
-                        ProgressFab(
-                          progress: _progress,
-                          isDark: isDark,
-                          size: fabSize,
-                          onTap: _showProgressDetails,
-                        ),
-                      ],
+                    return LiquidGlassNavBar(
+                      currentIndex: _currentIndex,
+                      isDark: isDark,
+                      isCompact: isCompact,
+                      progress: _progress,
+                      onProgressTap: _showProgressDetails,
+                      onTap: (index) {
+                        if (_currentIndex != index) {
+                          setState(() {
+                            _previousIndex = _currentIndex;
+                            _currentIndex = index;
+                            _isNavbarVisible = true;
+                          });
+                        }
+                      },
                     );
                   },
                 ),
