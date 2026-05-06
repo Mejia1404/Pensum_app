@@ -7,8 +7,6 @@ class LiquidGlassNavBar extends StatelessWidget {
   final bool isDark;
   final bool isCompact;
   final ValueChanged<int> onTap;
-  final double progress;
-  final VoidCallback? onProgressTap;
 
   const LiquidGlassNavBar({
     super.key,
@@ -16,8 +14,6 @@ class LiquidGlassNavBar extends StatelessWidget {
     required this.isDark,
     required this.onTap,
     this.isCompact = false,
-    this.progress = 0.0,
-    this.onProgressTap,
   });
 
   static const _icons = [
@@ -32,7 +28,7 @@ class LiquidGlassNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalItems = _icons.length + 1; // 5 nav items + 1 progress
+    final totalItems = _icons.length;
 
     return RepaintBoundary(
       child: ClipRRect(
@@ -64,7 +60,7 @@ class LiquidGlassNavBar extends StatelessWidget {
                 final itemWidth = constraints.maxWidth / totalItems;
                 return Stack(
                   children: [
-                    // Sliding indicator (only for nav items, not progress)
+                    // Sliding indicator
                     AnimatedPositioned(
                       duration: const Duration(milliseconds: 350),
                       curve: Curves.easeOutCubic,
@@ -92,33 +88,21 @@ class LiquidGlassNavBar extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Icons + Progress
+                    // Icons
                     Row(
-                      children: [
-                        ...List.generate(_icons.length, (i) {
-                          return SizedBox(
-                            width: itemWidth,
-                            child: _LiquidNavItem(
-                              icon: _icons[i],
-                              label: _labels[i],
-                              isSelected: currentIndex == i,
-                              isCompact: isCompact,
-                              isDark: isDark,
-                              onTap: () => onTap(i),
-                            ),
-                          );
-                        }),
-                        // Progress indicator integrated
-                        SizedBox(
+                      children: List.generate(_icons.length, (i) {
+                        return SizedBox(
                           width: itemWidth,
-                          child: _ProgressNavItem(
-                            progress: progress,
-                            isDark: isDark,
+                          child: _LiquidNavItem(
+                            icon: _icons[i],
+                            label: _labels[i],
+                            isSelected: currentIndex == i,
                             isCompact: isCompact,
-                            onTap: onProgressTap,
+                            isDark: isDark,
+                            onTap: () => onTap(i),
                           ),
-                        ),
-                      ],
+                        );
+                      }),
                     ),
                   ],
                 );
@@ -252,102 +236,6 @@ class _LiquidNavItemState extends State<_LiquidNavItem>
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProgressNavItem extends StatefulWidget {
-  final double progress;
-  final bool isDark;
-  final bool isCompact;
-  final VoidCallback? onTap;
-
-  const _ProgressNavItem({
-    required this.progress,
-    required this.isDark,
-    this.isCompact = false,
-    this.onTap,
-  });
-
-  @override
-  State<_ProgressNavItem> createState() => _ProgressNavItemState();
-}
-
-class _ProgressNavItemState extends State<_ProgressNavItem> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final ringSize = widget.isCompact ? 28.0 : 32.0;
-    final fontSize = widget.isCompact ? 9.0 : 10.0;
-
-    final accentColor = AppColors.accent;
-    final labelColor = widget.isDark
-        ? Colors.white.withOpacity(0.5)
-        : AppColors.textLightMuted.withOpacity(0.7);
-
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.85 : 1.0,
-        duration: const Duration(milliseconds: 120),
-        curve: Curves.easeOutCubic,
-        child: Container(
-          color: Colors.transparent,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: ringSize,
-                height: ringSize,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Progress ring
-                    SizedBox(
-                      width: ringSize,
-                      height: ringSize,
-                      child: CircularProgressIndicator(
-                        value: widget.progress,
-                        strokeWidth: 2.5,
-                        strokeCap: StrokeCap.round,
-                        backgroundColor: widget.isDark
-                            ? AppColors.darkBorder.withOpacity(0.3)
-                            : AppColors.lightBorder.withOpacity(0.5),
-                        valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-                      ),
-                    ),
-                    // Percentage text
-                    Text(
-                      '${(widget.progress * 100).toStringAsFixed(0)}%',
-                      style: TextStyle(
-                        fontSize: widget.isCompact ? 8.0 : 9.0,
-                        fontWeight: FontWeight.bold,
-                        color: accentColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Progreso',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: fontSize,
-                  color: labelColor,
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
               ),
             ],
           ),

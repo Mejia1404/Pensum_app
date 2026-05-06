@@ -573,8 +573,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                       currentIndex: _currentIndex,
                       isDark: isDark,
                       isCompact: isCompact,
-                      progress: _progress,
-                      onProgressTap: _showProgressDetails,
                       onTap: (index) {
                         if (_currentIndex != index) {
                           setState(() {
